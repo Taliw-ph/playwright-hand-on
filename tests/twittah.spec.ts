@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LoginPage } from "../pom/login.page";
-import { invalidUser, validUser } from "../fixtures/user";
+import { invalidUsers, validUser } from "../fixtures/user";
 import { HomePage } from "../pom/home.page";
 
 test.describe("Login page of Twittah", () => {
@@ -25,12 +25,15 @@ test.describe("Login page of Twittah", () => {
         await homePage.shouldDisplayUserProfileOf(validUser);
     });
 
-    test("Login failed", async ({ page }) => {
-        await loginPage.loginWith(invalidUser.credential);
-
-        const errorMessage: string = "ล็อกอินหรือรหัสผ่านไม่ถูกต้อง";
-        await loginPage.shouldContainErrorMessage(errorMessage);
-    });
+    for (const user of invalidUsers) {
+        test(`Login failed: ${user.credential.login} ${user.credential.password}`, async ({
+            page,
+        }) => {
+            await loginPage.loginWith(user.credential);
+            await loginPage.shouldBeDisplayed();
+            await loginPage.shouldContainErrorMessage(user.errorMessage || "");
+        });
+    }
 });
 
 test.describe("Home page of Twittah", () => {
